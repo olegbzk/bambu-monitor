@@ -1,0 +1,11 @@
+releases:
+  - name: bambu-monitor
+    chart: .
+    version: 1.0.0
+    namespace: tools
+    createNamespace: true
+    missingFileHandler: Warn
+    values:
+      - values.yaml
+    secrets:
+      - secrets.yaml

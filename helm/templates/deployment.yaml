@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name }}
+  labels:
+    app: {{ .name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .name }}
+    spec:
+      serviceAccountName: {{ .name }}
+      imagePullSecrets:
+        - name: registry-gitlab
+      securityContext: 
+            {{- with .Values.securityContext }}
+            {{- toYaml . | nindent 8 }}
+            {{- end }}
+      containers:
+        - name: {{ .name }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+              {{- with .Values.resources }}
+              {{- toYaml . | nindent 10 }}
+              {{- end }}
+          args:
+            - "{{ .arguments | join `" "` }}"
+          envFrom:
+            {{- if .Values.secret }}
+            - secretRef:
+                name: bambu-monitor-secret
+            {{- end }}
+          ports:
+            - name: health
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe: 
+            tcpSocket:
+              port: health
+          readinessProbe: 
+            tcpSocket:
+              port: health
+{{- end }}
+{{- end }}

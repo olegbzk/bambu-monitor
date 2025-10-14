@@ -1,0 +1,15 @@
+{{- if .Values.secret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bambu-monitor-secret
+type: Opaque
+data:
+  {{- range $key, $val := .Values.secret }}
+  {{- if or (kindIs "map" $val) (kindIs "slice" $val) }}
+  {{ $key }}: {{ $val | toJson | b64enc | quote }}
+  {{- else }}
+  {{ $key }}: {{ $val | b64enc | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
