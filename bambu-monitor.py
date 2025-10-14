@@ -103,12 +103,6 @@ def start_health_server(port):
 
 
 async def send_telegram_message(message=None, photo_path=None):
-    TELEGRAM_BOT_TOKEN = os.getenv('TG_BOT_TOKEN', '')
-    CHAT_ID = os.getenv('TG_CHAT_ID', '')
-    if TELEGRAM_BOT_TOKEN == '' or CHAT_ID == '':
-        print('Please set the TG_BOT_TOKEN and TG_CHAT_ID environment variables.')
-        exit(1)
-    bot = Bot(token=TELEGRAM_BOT_TOKEN)
     async def send_photo(text, chat_id, photo_file):
         async with bot:
             await  bot.send_photo(chat_id=chat_id, photo=photo_file, caption=text, parse_mode='MarkdownV2')
@@ -123,7 +117,9 @@ if __name__ == '__main__':
     print('Connecting to BambuLab 3D printer')
     print(f'IP: {IP}')
     print(f'Serial: {SERIAL}')
-
+    retry_count = 0
+    MAX_RETRIES = 5
+    
     # Start health check server
     health_server = start_health_server(HEALTH_PORT)
 
@@ -131,15 +127,28 @@ if __name__ == '__main__':
     printer = bl.Printer(IP, ACCESS_CODE, SERIAL)
 
     # Connect to the BambuLab 3D printer
-    try:
-        printer.connect()
-        time.sleep(5)  # Wait for connection to stabilize
-        update_health_status(healthy=True, connected=True)
-        print('Successfully connected to printer')
-    except Exception as e:
-        print(f'Failed to connect to printer: {e}')
-        update_health_status(healthy=False, connected=False, error=str(e))
-        exit(1)
+    while retry_count < MAX_RETRIES:
+        try:
+            printer.connect()
+            time.sleep(5)
+            update_health_status(healthy=True, connected=True)
+            print('Successfully connected to printer')
+            break
+        except Exception as e:
+            retry_count += 1
+            print(f'Connection attempt {retry_count} failed: {e}')
+            if retry_count >= MAX_RETRIES:
+                print('Max retries reached, exiting')
+                exit(1)
+            time.sleep(10)
+        
+    TELEGRAM_BOT_TOKEN = os.getenv('TG_BOT_TOKEN', '')
+    CHAT_ID = os.getenv('TG_CHAT_ID', '')
+    if TELEGRAM_BOT_TOKEN == '' or CHAT_ID == '':
+        print('Please set the TG_BOT_TOKEN and TG_CHAT_ID environment variables.')
+        bot = None
+    else:
+        bot = Bot(token=TELEGRAM_BOT_TOKEN)
     
     loop_num = 0
     previous_printer_status = None
@@ -182,14 +191,12 @@ Finish time: {finish_time_format}
                     '''
                 )
                 if previous_printer_status != status and loop_num  != 1 or loop_num == 1:
-                    if status == "PAUSED":
-                        status_icon = "⏸️"
-                    elif status == "RUNNING":
-                        status_icon = "🚀"
-                    elif status == "FINISHED":
-                        status_icon = "✅"
-                    else:
-                        status_icon = "ℹ️"
+                    STATUS_ICONS = {
+                        "PAUSED": "⏸️",
+                        "RUNNING": "🚀",
+                        "FINISHED": "✅",
+                    }
+                    status_icon = STATUS_ICONS.get(status, "ℹ️")
                         
                     customize.strict_markdown = False
                     markdown_text = textwrap.dedent(
@@ -206,7 +213,11 @@ Finish time: {finish_time_format}
                     image = printer.get_camera_image()
                     image.save("bambu_status.png")
                     previous_printer_status = status
-                    asyncio.run(send_telegram_message(message, "bambu_status.png"))
+                    if bot is None:
+                        print("Telegram bot not configured, skipping notification.")
+                        continue
+                    else:
+                        asyncio.run(send_telegram_message(message, "bambu_status.png"))
             
             except Exception as e:
                 print(f"Error during monitoring loop: {e}")
@@ -217,4 +228,5 @@ Finish time: {finish_time_format}
         print("\nShutting down...")
     finally:
         printer.disconnect()
-        update_health_status(healthy=False, connected=False, error="Service stopped")          
+        health_server.shutdown()
+        update_health_status(healthy=False, connected=False, error="Service stopped")
