@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .name }}
+  name: {{ .Release.Name }}
   labels:
-    app: {{ .name }}
+    app: {{.Release.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ .name }}
+      app: {{.Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .name }}
+        app: {{.Release.Name }}
     spec:
-      serviceAccountName: {{ .name }}
+      serviceAccountName: {{.Release.Name }}
       imagePullSecrets:
         - name: registry-gitlab
       securityContext: 
@@ -21,7 +21,7 @@ spec:
             {{- toYaml . | nindent 8 }}
             {{- end }}
       containers:
-        - name: {{ .name }}
+        - name: {{.Release.Name }}
           image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
@@ -45,5 +45,3 @@ spec:
           readinessProbe: 
             tcpSocket:
               port: health
-{{- end }}
-{{- end }}
