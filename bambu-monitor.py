@@ -150,6 +150,7 @@ if __name__ == '__main__':
                 time.sleep(5)
                 loop_num = loop_num + 1
                 status = printer.get_state()
+                extended_status = printer.get_current_state()
                 percentage = printer.get_percentage()
                 layer_num = printer.current_layer_num()
                 total_layer_num = printer.total_layer_num()
@@ -169,7 +170,7 @@ if __name__ == '__main__':
 
                 print(
                     f'''
-{status}
+{status} - {extended_status}
 ----
 Layers: {layer_num}/{total_layer_num}
 Percentage: {percentage}%
@@ -181,10 +182,19 @@ Finish time: {finish_time_format}
                     '''
                 )
                 if previous_printer_status != status and loop_num  != 1 or loop_num == 1:
+                    if status == "PAUSED":
+                        status_icon = "⏸️"
+                    elif status == "RUNNING":
+                        status_icon = "🚀"
+                    elif status == "FINISHED":
+                        status_icon = "✅"
+                    else:
+                        status_icon = "ℹ️"
+                        
                     customize.strict_markdown = False
                     markdown_text = textwrap.dedent(
                         f"""
-                        # {status}
+                        {status_icon} {status} - {extended_status}
                         >Percentage: {percentage}%
                         >Bed temp: {bed_temperature}ºC
                         >Nozzle temp: {nozzle_temperature}ºC
