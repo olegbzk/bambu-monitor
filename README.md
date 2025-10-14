@@ -1,7 +1,8 @@
 # BambuLab Printer Monitor and Telegram Notifier
 
-Proprietary `Bambu Handy` app push notifications are unreliable and often delayed. This project provides an alternative solution.
-A monitoring service for BambuLab 3D printers that provides real-time status updates and Telegram notifications.
+Proprietary `Bambu Handy` app notifications are unreliable and often delayed.
+
+This project provides a better solution: a monitoring service for BambuLab 3D printers that delivers real-time status updates and Telegram notifications.
 
 ## Features
 
@@ -27,7 +28,6 @@ BAMBU_SERIAL=your_printer_serial
 BAMBU_ACCESS_CODE=your_access_code
 TG_BOT_TOKEN=your_telegram_bot_token
 TG_CHAT_ID=your_telegram_chat_id
-HEALTH_PORT=8080
 ```
 
 ### Docker Compose
