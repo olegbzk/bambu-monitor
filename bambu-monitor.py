@@ -113,6 +113,12 @@ async def send_telegram_message(message=None, photo_path=None):
         print(f"Failed to send photo: {e}")
 
 
+def get_real_printer_status(status,extended_status):
+    if status == "RUNNING" or status == "PREPARE":
+        return ["RUNNING","🖨️"]
+    else:
+        return [status,extended_status] 
+
 if __name__ == '__main__':
     print('Connecting to BambuLab 3D printer')
     print(f'IP: {IP}')
@@ -190,18 +196,19 @@ Finish time: {finish_time_format}
 ----
                     '''
                 )
-                if previous_printer_status != status and loop_num  != 1 or loop_num == 1:
+                real_printer_status = get_real_printer_status(status, extended_status)
+                if (previous_printer_status != real_printer_status[0] and loop_num != 1) or loop_num == 1:
                     STATUS_ICONS = {
                         "PAUSED": "⏸️",
                         "RUNNING": "🚀",
                         "FINISHED": "✅",
                     }
-                    status_icon = STATUS_ICONS.get(status, "ℹ️")
+                    status_icon = STATUS_ICONS.get(real_printer_status[0], "ℹ️")
                         
                     customize.strict_markdown = False
                     markdown_text = textwrap.dedent(
                         f"""
-                        {status_icon} {status} - {extended_status}
+                        {status_icon} {real_printer_status[0]} - {real_printer_status[1]}
                         >Percentage: {percentage}%
                         >Bed temp: {bed_temperature}ºC
                         >Nozzle temp: {nozzle_temperature}ºC
@@ -212,7 +219,7 @@ Finish time: {finish_time_format}
                     message = telegramify_markdown.markdownify(markdown_text)
                     image = printer.get_camera_image()
                     image.save("bambu_status.png")
-                    previous_printer_status = status
+                    previous_printer_status = real_printer_status[0]
                     if bot is None:
                         print("Telegram bot not configured, skipping notification.")
                         continue
