@@ -1,6 +1,7 @@
 config:
   LOG_LEVEL: info
   TZ: Europe/Kyiv
+  PRINTER_NAME: black
 
 imagePullSecrets: []
 nameOverride: ""
@@ -10,7 +11,7 @@ fullnameOverride: ""
 image:
   repository: docker.io/rooibos75
   name: bambu-monitor
-  tag: dev-15
+  tag: dev-17
   pullPolicy: IfNotPresent
 
 resources:

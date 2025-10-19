@@ -37,6 +37,7 @@ ACCESS_CODE = os.getenv('BAMBU_ACCESS_CODE', '')
 HEALTH_PORT = int(os.getenv('HEALTH_PORT', '8080'))
 TELEGRAM_TOKEN = os.getenv('TG_BOT_TOKEN', '')
 CHAT_ID = os.getenv('TG_CHAT_ID', '')
+PRINTER_NAME = os.getenv('PRINTER_NAME', 'Bambu Printer')
 
 if not all([IP, SERIAL, ACCESS_CODE]):
     print('Please set the BAMBU_IP, BAMBU_SERIAL, and BAMBU_ACCESS_CODE environment variables.')
@@ -168,6 +169,7 @@ def start_health_server(port):
 
 def get_printer_data(printer):
     """Collect and format printer data"""
+    # print(printer.mqtt_client.dump())
     status = str(printer.get_state()).strip()
     extended_status = str(printer.get_current_state()).strip()
     percentage = printer.get_percentage()
@@ -191,6 +193,7 @@ def get_printer_data(printer):
         finish_time_format = "NA"
     
     return {
+        'printer_name': PRINTER_NAME,
         'status': status,
         'extended_status': extended_status,
         'percentage': percentage,
@@ -199,7 +202,7 @@ def get_printer_data(printer):
         'bed_temperature': bed_temperature,
         'nozzle_temperature': nozzle_temperature,
         'remaining_time': remaining_time,
-        'finish_time': finish_time_format
+        'finish_time': finish_time_format,
     }
 
 
@@ -209,6 +212,7 @@ def create_telegram_message(data):
     customize.strict_markdown = False
     
     markdown_text = textwrap.dedent(f"""
+        **{data['printer_name']}**
         {status_icon} {data['status']} - {data['extended_status']}
         >Percentage: {data['percentage']}%
         >Bed temp: {data['bed_temperature']}ºC
@@ -225,9 +229,9 @@ def should_send_notification(current_status, previous_status, loop_num):
     return (previous_status != current_status and loop_num != 1) or loop_num == 1
 
 
-def should_skip_preparing(status, extended_status):
+def should_skip_preparing(current_status):
     """Check if printer is preparing and should skip notification"""
-    if (status == "RUNNING" and extended_status != "PRINTING") or status == "PREPARE":
+    if (current_status['status'] == "RUNNING" and current_status['extended_status'] != "PRINTING") or current_status['status'] == "PREPARE":
         return True
     else:
         return False
@@ -265,7 +269,7 @@ async def send_telegram_message(bot_instance, chat_id, message=None, photo_path=
 
 
 if __name__ == '__main__':
-    app_logger.info({'printer_data': {'IP': IP, 'Serial': SERIAL}})
+    app_logger.info({'printer_data': {'Name': PRINTER_NAME, 'IP': IP, 'Serial': SERIAL}})
     retry_count = 0
     
     health_server = start_health_server(HEALTH_PORT)
@@ -293,7 +297,7 @@ if __name__ == '__main__':
         bot = Bot(token=TELEGRAM_TOKEN)
     
     loop_num = 0
-    previous_printer_status = None
+    previous_printer_status = {}
     
     try:
         while True:
@@ -305,6 +309,7 @@ if __name__ == '__main__':
                 # Log status update
                 app_logger.info("Printer status update", extra={
                     'printer_data': {
+                        "printer_name": PRINTER_NAME,
                         "status": printer_data['status'],
                         "extended_status": printer_data['extended_status'],
                         "layers": f"{printer_data['layer_num']}/{printer_data['total_layer_num']}",
@@ -317,7 +322,8 @@ if __name__ == '__main__':
                 })
                 
                 # Check if notification should be sent
-                if should_send_notification(printer_data['status'], previous_printer_status, loop_num):
+                current_printer_status = {"status": printer_data['status'], "extended_status": printer_data['extended_status']}
+                if should_send_notification(current_printer_status, previous_printer_status, loop_num):
                     message = create_telegram_message(printer_data)
                     try:
                         image = printer.get_camera_image()
@@ -327,12 +333,12 @@ if __name__ == '__main__':
                         continue
                     if bot is None:
                         app_logger.info("Telegram bot not configured, skipping notification.")
-                    elif should_skip_preparing(printer_data['status'], printer_data['extended_status']):
+                    elif should_skip_preparing(current_printer_status):
                         app_logger.info("Printer is preparing, skipping notification.")
                     else:
                         app_logger.info(f"Sending notification - Status: '{printer_data['status']}', Extended: '{printer_data['extended_status']}'")
                         asyncio.run(send_telegram_message(bot, CHAT_ID, message, IMAGE_FILENAME))
-                    previous_printer_status = printer_data['status']
+                    previous_printer_status = current_printer_status
                     
                     
             except Exception as e:
