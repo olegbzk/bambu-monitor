@@ -28,12 +28,14 @@ spec:
               {{- with .Values.resources }}
               {{- toYaml . | nindent 10 }}
               {{- end }}
-          args:
-            - "{{ .arguments | join `" "` }}"
           envFrom:
+            {{- if .Values.config }}
+            - configMapRef:
+                name: {{.Release.Name }}-config
+            {{- end }}
             {{- if .Values.secret }}
             - secretRef:
-                name: bambu-monitor-secret
+                name: {{.Release.Name }}-secret
             {{- end }}
           ports:
             - name: health

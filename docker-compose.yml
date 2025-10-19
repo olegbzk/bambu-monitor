@@ -11,6 +11,7 @@ services:
       - TG_BOT_TOKEN=${TG_BOT_TOKEN}
       - TG_CHAT_ID=${TG_CHAT_ID}
       - LOG_LEVEL=info
+      - TZ=Europe/Kyiv
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]

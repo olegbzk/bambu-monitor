@@ -1,11 +1,16 @@
+config:
+  LOG_LEVEL: info
+  TZ: Europe/Kyiv
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+
 image:
   repository: docker.io/rooibos75
   name: bambu-monitor
-  tag: dev-12
+  tag: dev-14
   pullPolicy: IfNotPresent
 
 resources:

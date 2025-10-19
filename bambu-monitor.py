@@ -177,11 +177,14 @@ def get_printer_data(printer):
     nozzle_temperature = format(printer.get_nozzle_temperature() or 0, '.0f')
     remaining_time = printer.get_time()
     
-    # Calculate finish time
+    # Calculate finish time with timezone awareness
     if remaining_time is not None and remaining_time > 0:
         try:
-            finish_time = datetime.datetime.now() + datetime.timedelta(minutes=int(remaining_time))
-            finish_time_format = finish_time.strftime("%Y-%m-%d %H:%M:%S")
+            now = datetime.datetime.now(datetime.timezone.utc)
+            finish_time = now + datetime.timedelta(minutes=int(remaining_time))
+            local_finish_time = finish_time.astimezone()
+            finish_time_format = local_finish_time.strftime("%Y-%m-%d %H:%M:%S %Z")
+            
         except (ValueError, OverflowError):
             finish_time_format = "NA"
     else:
