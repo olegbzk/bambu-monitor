@@ -1,0 +1,246 @@
+{
+    "upgrade": {
+        "command": "get_history",
+        "reason": "",
+        "firmware_optional": [
+            {
+                "firmware": {
+                    "version": "01.08.02.00",
+                    "force_update": false,
+                    "url": "https://public-cdn.bblmw.com/upgrade/device/C12/01.08.02.00/product/e750866b34/ota-p003_v01.08.02.00-20250529155803.json.sig",
+                    "description": "",
+                    "status": "release",
+                    "accessories_versions": null
+                },
+                "ams": []
+            },
+            {
+                "firmware": {
+                    "version": "01.08.01.00",
+                    "force_update": false,
+                    "url": "https://public-cdn.bblmw.com/upgrade/device/C12/01.08.01.00/product/1aaa9dbd35/ota-p003_v01.08.01.00-20250519172933.json.sig",
+                    "description": "",
+                    "status": "release",
+                    "accessories_versions": null
+                },
+                "ams": []
+            },
+            {
+                "firmware": {
+                    "version": "01.08.00.00",
+                    "force_update": false,
+                    "url": "https://public-cdn.bblmw.com/upgrade/device/C12/01.08.00.00/product/45ea644d25/ota-p003_v01.08.00.00-20250429165233.json.sig",
+                    "description": "",
+                    "status": "release",
+                    "accessories_versions": null
+                },
+                "ams": []
+            },
+            {
+                "firmware": {
+                    "version": "01.06.01.02",
+                    "force_update": false,
+                    "url": "https://public-cdn.bblmw.com/upgrade/device/C12/01.06.01.02/product/e70b5f9580/ota-p003_v01.06.01.02-20240926182734.json.sig",
+                    "description": "",
+                    "status": "release",
+                    "accessories_versions": null
+                },
+                "ams": []
+            }
+        ],
+        "result": "success"
+    },
+    "info": {
+        "command": "get_version",
+        "sequence_id": "",
+        "module": [
+            {
+                "name": "ota",
+                "project_name": "C12",
+                "sw_ver": "01.07.00.00",
+                "new_ver": "01.09.00.00",
+                "hw_ver": "OTA",
+                "sn": "01P00A430900762",
+                "flag": 15
+            },
+            {
+                "name": "esp32",
+                "project_name": "C12",
+                "sw_ver": "01.11.32.89",
+                "hw_ver": "AP04",
+                "sn": "01P00A430900762",
+                "flag": 0
+            },
+            {
+                "name": "mc",
+                "project_name": "P1",
+                "sw_ver": "00.00.29.75",
+                "loader_ver": "00.00.00.28",
+                "hw_ver": "MC07",
+                "sn": "01D06B3C2007197",
+                "flag": 0
+            },
+            {
+                "name": "th",
+                "project_name": "P1",
+                "sw_ver": "00.00.09.95",
+                "loader_ver": "00.00.00.14",
+                "hw_ver": "TH09",
+                "sn": "01E06B3C2513000",
+                "flag": 0
+            }
+        ],
+        "result": "success",
+        "reason": ""
+    },
+    "print": {
+        "upgrade_state": {
+            "sequence_id": 0,
+            "progress": "",
+            "status": "IDLE",
+            "consistency_request": false,
+            "dis_state": 0,
+            "err_code": 0,
+            "force_upgrade": false,
+            "message": "0%, 0B/s",
+            "module": "",
+            "new_version_state": 1,
+            "cur_state_code": 1,
+            "idx2": 2244239115,
+            "new_ver_list": [
+                {
+                    "name": "ota",
+                    "cur_ver": "01.07.00.00",
+                    "new_ver": "01.09.00.00",
+                    "cur_release_type": 3,
+                    "new_release_type": 3
+                }
+            ]
+        },
+        "ipcam": {
+            "ipcam_dev": "1",
+            "ipcam_record": "enable",
+            "timelapse": "disable",
+            "resolution": "",
+            "tutk_server": "disable",
+            "mode_bits": 3
+        },
+        "upload": {
+            "status": "idle",
+            "progress": 0,
+            "message": ""
+        },
+        "net": {
+            "conf": 0,
+            "info": [
+                {
+                    "ip": 755542208,
+                    "mask": 16777215
+                }
+            ]
+        },
+        "nozzle_temper": 248.875,
+        "nozzle_target_temper": 250,
+        "bed_temper": 75,
+        "bed_target_temper": 75,
+        "chamber_temper": 5,
+        "mc_print_stage": "2",
+        "heatbreak_fan_speed": "15",
+        "cooling_fan_speed": "7",
+        "big_fan1_speed": "0",
+        "big_fan2_speed": "10",
+        "mc_percent": 20,
+        "mc_remaining_time": 166,
+        "ams_status": 1280,
+        "ams_rfid_status": 2,
+        "hw_switch_state": 1,
+        "spd_mag": 100,
+        "spd_lvl": 2,
+        "print_error": 0,
+        "lifecycle": "product",
+        "wifi_signal": "-65dBm",
+        "gcode_state": "RUNNING",
+        "gcode_file_prepare_percent": "100",
+        "queue_number": 0,
+        "queue_total": 0,
+        "queue_est": 0,
+        "queue_sts": 0,
+        "project_id": "524953159",
+        "profile_id": "445394194",
+        "task_id": "524953159",
+        "subtask_id": "524953159",
+        "subtask_name": "bimba_2250-125",
+        "gcode_file": "bimba_2250-125.3mf",
+        "stg": [2, 14, 1],
+        "stg_cur": 0,
+        "print_type": "cloud",
+        "home_flag": 292767039,
+        "mc_print_line_number": "0",
+        "mc_print_sub_stage": 0,
+        "sdcard": true,
+        "force_upgrade": false,
+        "mess_production_state": "active",
+        "layer_num": 27,
+        "total_layer_num": 472,
+        "s_obj": [],
+        "filam_bak": [],
+        "fan_gear": 11796582,
+        "nozzle_diameter": "0.6",
+        "nozzle_type": "hardened_steel",
+        "cali_version": 0,
+        "k": "0.0250",
+        "flag3": 15,
+        "hms": [],
+        "online": {
+            "ahb": false,
+            "rfid": false,
+            "version": 1753927830
+        },
+        "ams": {
+            "ams": [],
+            "ams_exist_bits": "0",
+            "tray_exist_bits": "0",
+            "tray_is_bbl_bits": "0",
+            "tray_tar": "254",
+            "tray_now": "254",
+            "tray_pre": "254",
+            "tray_read_done_bits": "0",
+            "tray_reading_bits": "0",
+            "version": 1,
+            "insert_flag": false,
+            "power_on_flag": false
+        },
+        "vt_tray": {
+            "id": "254",
+            "tag_uid": "0000000000000000",
+            "tray_id_name": "",
+            "tray_info_idx": "GFG99",
+            "tray_type": "PETG",
+            "tray_sub_brands": "",
+            "tray_color": "0ACC38FF",
+            "tray_weight": "0",
+            "tray_diameter": "0.00",
+            "tray_temp": "0",
+            "tray_time": "0",
+            "bed_temp_type": "0",
+            "bed_temp": "0",
+            "nozzle_temp_max": "270",
+            "nozzle_temp_min": "220",
+            "xcam_info": "000000000000000000000000",
+            "tray_uuid": "00000000000000000000000000000000",
+            "remain": 0,
+            "k": 0.019999999552965164,
+            "n": 1,
+            "cali_idx": -1
+        },
+        "lights_report": [
+            {
+                "node": "chamber_light",
+                "mode": "on"
+            }
+        ],
+        "command": "push_status",
+        "msg": 1,
+        "sequence_id": "4429"
+    }
+}

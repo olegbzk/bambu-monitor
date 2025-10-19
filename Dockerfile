@@ -7,7 +7,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 RUN apk add --no-cache \
     curl \
-    shadow 
+    shadow \
+    tzdata
 
 COPY requirements.txt .
 
