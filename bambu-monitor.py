@@ -227,7 +227,10 @@ def should_send_notification(current_status, previous_status, loop_num):
 
 def should_skip_preparing(status, extended_status):
     """Check if printer is preparing and should skip notification"""
-    return status == "RUNNING" and extended_status != "PRINTING"
+    if (status == "RUNNING" and extended_status != "PRINTING") or status == "PREPARE":
+        return True
+    else:
+        return False
 
 
 async def send_telegram_message(bot_instance, chat_id, message=None, photo_path=None):
