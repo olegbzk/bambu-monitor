@@ -93,7 +93,7 @@ jobs:
 
   deploy:
     name: 🚀
-    runs-on: bbox
+    runs-on: {{ github.event.repository.name }}
     needs: [docker_build, helm_artifact, get_version]
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     steps:
