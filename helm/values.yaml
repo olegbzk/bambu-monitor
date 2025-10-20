@@ -11,7 +11,7 @@ fullnameOverride: ""
 image:
   repository: docker.io/rooibos75
   name: bambu-monitor
-  tag: dev-17
+  tag: main-16
   pullPolicy: IfNotPresent
 
 resources:

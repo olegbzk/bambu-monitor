@@ -185,7 +185,7 @@ def get_printer_data(printer):
             now = datetime.datetime.now(datetime.timezone.utc)
             finish_time = now + datetime.timedelta(minutes=int(remaining_time))
             local_finish_time = finish_time.astimezone()
-            finish_time_format = local_finish_time.strftime("%Y-%m-%d %H:%M:%S %Z")
+            finish_time_format = local_finish_time.strftime("%H:%M")
             
         except (ValueError, OverflowError):
             finish_time_format = "NA"
@@ -202,7 +202,7 @@ def get_printer_data(printer):
         'bed_temperature': bed_temperature,
         'nozzle_temperature': nozzle_temperature,
         'remaining_time': remaining_time,
-        'finish_time': finish_time_format,
+        'finish_time': finish_time_format
     }
 
 
