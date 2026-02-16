@@ -12,6 +12,11 @@ RUN apk add --no-cache \
 
 COPY requirements.txt .
 
+RUN pip install --no-cache-dir --upgrade \
+    pip \
+    wheel==0.46.2 \
+    jaraco.context==6.1.0
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY bambu-monitor.py .
