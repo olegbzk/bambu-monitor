@@ -38,13 +38,13 @@ STATUS_ICONS = {
 }
 
 # Configuration from environment
-IP = os.getenv('BAMBU_IP', '')
-SERIAL = os.getenv('BAMBU_SERIAL', '')
-ACCESS_CODE = os.getenv('BAMBU_ACCESS_CODE', '')
+IP = os.getenv('BAMBU_IP', '').strip()
+SERIAL = os.getenv('BAMBU_SERIAL', '').strip()
+ACCESS_CODE = os.getenv('BAMBU_ACCESS_CODE', '').strip()
 HEALTH_PORT = int(os.getenv('HEALTH_PORT', '8080'))
-TELEGRAM_TOKEN = os.getenv('TG_BOT_TOKEN', '')
-CHAT_ID = os.getenv('TG_CHAT_ID', '')
-PRINTER_NAME = os.getenv('PRINTER_NAME', 'Bambu Printer')
+TELEGRAM_TOKEN = os.getenv('TG_BOT_TOKEN', '').strip()
+CHAT_ID = os.getenv('TG_CHAT_ID', '').strip()
+PRINTER_NAME = os.getenv('PRINTER_NAME', 'Bambu Printer').strip()
 
 if not all([IP, SERIAL, ACCESS_CODE]):
     print('Please set the BAMBU_IP, BAMBU_SERIAL, and BAMBU_ACCESS_CODE environment variables.')
@@ -291,6 +291,10 @@ if __name__ == '__main__':
         try:
             printer.connect()
             time.sleep(CONNECTION_WAIT)
+            # Send standalone pushall to force a full msg=0 status push.
+            # Newer firmware ignores pushall when bundled with other commands.
+            printer.mqtt_client.pushall()
+            time.sleep(CONNECTION_WAIT)
             update_health_status(healthy=True, connected=True)
             app_logger.info('Successfully connected to printer')
             break
@@ -376,6 +380,8 @@ if __name__ == '__main__':
                         pass
                     try:
                         printer.connect()
+                        time.sleep(CONNECTION_WAIT)
+                        printer.mqtt_client.pushall()
                         time.sleep(CONNECTION_WAIT)
                         consecutive_failures = 0
                         update_health_status(healthy=True, connected=True)
