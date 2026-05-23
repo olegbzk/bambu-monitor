@@ -23,6 +23,13 @@ MAX_RETRIES = 5
 RETRY_DELAY = 10  # seconds
 CONNECTION_WAIT = 5  # seconds
 IMAGE_FILENAME = "bambu_status.png"
+RECONNECT_THRESHOLD = 3
+LOG_THROTTLE_SECONDS = 60
+
+SUPPRESSED_LOG_MESSAGES = {
+    "Printer Values Not Available Yet",
+    "Not connected to the MQTT server",
+}
 
 STATUS_ICONS = {
     "PAUSED": "⏸️",
@@ -31,13 +38,13 @@ STATUS_ICONS = {
 }
 
 # Configuration from environment
-IP = os.getenv('BAMBU_IP', '')
-SERIAL = os.getenv('BAMBU_SERIAL', '')
-ACCESS_CODE = os.getenv('BAMBU_ACCESS_CODE', '')
+IP = os.getenv('BAMBU_IP', '').strip()
+SERIAL = os.getenv('BAMBU_SERIAL', '').strip()
+ACCESS_CODE = os.getenv('BAMBU_ACCESS_CODE', '').strip()
 HEALTH_PORT = int(os.getenv('HEALTH_PORT', '8080'))
-TELEGRAM_TOKEN = os.getenv('TG_BOT_TOKEN', '')
-CHAT_ID = os.getenv('TG_CHAT_ID', '')
-PRINTER_NAME = os.getenv('PRINTER_NAME', 'Bambu Printer')
+TELEGRAM_TOKEN = os.getenv('TG_BOT_TOKEN', '').strip()
+CHAT_ID = os.getenv('TG_CHAT_ID', '').strip()
+PRINTER_NAME = os.getenv('PRINTER_NAME', 'Bambu Printer').strip()
 
 if not all([IP, SERIAL, ACCESS_CODE]):
     print('Please set the BAMBU_IP, BAMBU_SERIAL, and BAMBU_ACCESS_CODE environment variables.')
@@ -64,6 +71,10 @@ class JSONFormatter(logging.Formatter):
 
 def setup_logging():
     """Configure logging with JSON formatter"""
+    class SuppressMessageFilter(logging.Filter):
+        def filter(self, record):
+            return record.getMessage() not in SUPPRESSED_LOG_MESSAGES
+
     root_level = logging.DEBUG if log_level == logging.DEBUG else logging.WARNING
     logging.basicConfig(
         level=root_level,
@@ -72,6 +83,7 @@ def setup_logging():
     
     for handler in logging.root.handlers:
         handler.setFormatter(JSONFormatter())
+        handler.addFilter(SuppressMessageFilter())
     
     app_logger = logging.getLogger('bambu_monitor')
     app_logger.setLevel(log_level)
@@ -279,6 +291,10 @@ if __name__ == '__main__':
         try:
             printer.connect()
             time.sleep(CONNECTION_WAIT)
+            # Send standalone pushall to force a full msg=0 status push.
+            # Newer firmware ignores pushall when bundled with other commands.
+            printer.mqtt_client.pushall()
+            time.sleep(CONNECTION_WAIT)
             update_health_status(healthy=True, connected=True)
             app_logger.info('Successfully connected to printer')
             break
@@ -298,6 +314,9 @@ if __name__ == '__main__':
     
     loop_num = 0
     previous_printer_status = {}
+    consecutive_failures = 0
+    last_error_message = None
+    last_error_time = 0.0
     
     try:
         while True:
@@ -305,6 +324,7 @@ if __name__ == '__main__':
                 time.sleep(LOOP_INTERVAL)
                 loop_num = loop_num + 1
                 printer_data = get_printer_data(printer)
+                consecutive_failures = 0
                 update_health_status(healthy=True, connected=True)
                 # Log status update
                 app_logger.info("Printer status update", extra={
@@ -342,8 +362,33 @@ if __name__ == '__main__':
                     
                     
             except Exception as e:
-                app_logger.error(f"Error during monitoring loop: {e}")
-                update_health_status(healthy=False, connected=False, error=str(e))
+                error_message = str(e)
+                consecutive_failures += 1
+                now = time.time()
+                if error_message != last_error_message or (now - last_error_time) > LOG_THROTTLE_SECONDS:
+                    app_logger.warning(f"Transient printer data error: {error_message}")
+                    last_error_message = error_message
+                    last_error_time = now
+
+                update_health_status(healthy=False, connected=False, error=error_message)
+
+                if consecutive_failures >= RECONNECT_THRESHOLD:
+                    app_logger.warning("Reconnecting to printer after repeated failures")
+                    try:
+                        printer.disconnect()
+                    except Exception:
+                        pass
+                    try:
+                        printer.connect()
+                        time.sleep(CONNECTION_WAIT)
+                        printer.mqtt_client.pushall()
+                        time.sleep(CONNECTION_WAIT)
+                        consecutive_failures = 0
+                        update_health_status(healthy=True, connected=True)
+                        app_logger.info("Reconnected to printer")
+                    except Exception as reconnect_error:
+                        app_logger.error(f"Reconnect failed: {reconnect_error}")
+                        update_health_status(healthy=False, connected=False, error=str(reconnect_error))
 
                 
     except KeyboardInterrupt:
